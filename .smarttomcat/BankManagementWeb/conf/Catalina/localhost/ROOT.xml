@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context docBase="C:/Users/Anurag Rana/IdeaProjects/BankManagementWeb/src/main/webapp">
+      
+  <Resource auth="Container" driverClassName="com.mysql.cj.jdbc.Driver" maxIdle="10" maxTotal="20" maxWaitMillis="10000" name="jdbc/banksystem" password="131486" type="javax.sql.DataSource" url="jdbc:mysql://localhost:3306/banksystem?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC" username="root"/>
+  
+  <Resources cacheMaxSize="10240">
+    <PreResources base="C:/Users/Anurag Rana/IdeaProjects/BankManagementWeb/target/classes" className="org.apache.catalina.webresources.DirResourceSet" webAppMount="/WEB-INF/classes"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/org/glassfish/web/jakarta.servlet.jsp.jstl/2.0.0/jakarta.servlet.jsp.jstl-2.0.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jakarta.servlet.jsp.jstl-2.0.0.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/jakarta/servlet/jsp/jstl/jakarta.servlet.jsp.jstl-api/2.0.0/jakarta.servlet.jsp.jstl-api-2.0.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jakarta.servlet.jsp.jstl-api-2.0.0.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/jakarta/el/jakarta.el-api/4.0.0/jakarta.el-api-4.0.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jakarta.el-api-4.0.0.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/3.0.0/jakarta.xml.bind-api-3.0.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jakarta.xml.bind-api-3.0.0.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/com/sun/activation/jakarta.activation/2.0.0/jakarta.activation-2.0.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jakarta.activation-2.0.0.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/mysql-connector-j-8.0.33.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/com/google/protobuf/protobuf-java/3.21.9/protobuf-java-3.21.9.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/protobuf-java-3.21.9.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/.m2/repository/org/glassfish/javax.json/1.1.4/javax.json-1.1.4.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/javax.json-1.1.4.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/IdeaProjects/BankManagementWeb/src/main/webapp/WEB-INF/lib/jakarta.json-2.0.1.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jakarta.json-2.0.1.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/IdeaProjects/BankManagementWeb/src/main/webapp/WEB-INF/lib/json-20231013.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/json-20231013.jar"/>
+    <PostResources base="C:/Users/Anurag Rana/IdeaProjects/BankManagementWeb/src/main/webapp/WEB-INF/lib/mysql-connector-j-9.5.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/mysql-connector-j-9.5.0.jar"/>
+  </Resources>
+</Context>

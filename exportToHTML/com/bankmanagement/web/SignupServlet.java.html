@@ -1,0 +1,119 @@
+<html>
+<head>
+<title>SignupServlet.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ff79c6;}
+.s1 { color: #e1e1e6;}
+.s2 { color: #f1fa8c;}
+.s3 { color: #6272a4;}
+.s4 { color: #bd93f9;}
+</style>
+</head>
+<body bgcolor="#15121e">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+SignupServlet.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.bankmanagement.web;</span>
+
+<span class="s0">import </span><span class="s1">jakarta.servlet.ServletException;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.annotation.WebServlet;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.http.*;</span>
+<span class="s0">import </span><span class="s1">java.io.IOException;</span>
+<span class="s0">import </span><span class="s1">java.sql.*;</span>
+<span class="s0">import </span><span class="s1">java.util.Random;</span>
+
+<span class="s1">@WebServlet(</span><span class="s2">&quot;/SignupServlet&quot;</span><span class="s1">)</span>
+<span class="s0">public class </span><span class="s1">SignupServlet </span><span class="s0">extends </span><span class="s1">HttpServlet {</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">doPost(HttpServletRequest req, HttpServletResponse res)</span>
+            <span class="s0">throws </span><span class="s1">ServletException, IOException {</span>
+
+        <span class="s1">res.setContentType(</span><span class="s2">&quot;text/html;charset=UTF-8&quot;</span><span class="s1">);</span>
+
+        <span class="s0">try </span><span class="s1">(Connection con = BankDAO.getConnection()) {</span>
+
+            <span class="s3">// ✅ Collect user input</span>
+            <span class="s1">String formNo = String.valueOf(System.currentTimeMillis());</span>
+            <span class="s1">String name = req.getParameter(</span><span class="s2">&quot;name&quot;</span><span class="s1">);</span>
+            <span class="s1">String father = req.getParameter(</span><span class="s2">&quot;father_name&quot;</span><span class="s1">);</span>
+            <span class="s1">String dob = req.getParameter(</span><span class="s2">&quot;dob&quot;</span><span class="s1">);</span>
+            <span class="s1">String gender = req.getParameter(</span><span class="s2">&quot;gender&quot;</span><span class="s1">);</span>
+            <span class="s1">String email = req.getParameter(</span><span class="s2">&quot;email&quot;</span><span class="s1">);</span>
+            <span class="s1">String address = req.getParameter(</span><span class="s2">&quot;address&quot;</span><span class="s1">);</span>
+            <span class="s1">String city = req.getParameter(</span><span class="s2">&quot;city&quot;</span><span class="s1">);</span>
+            <span class="s1">String pincode = req.getParameter(</span><span class="s2">&quot;pincode&quot;</span><span class="s1">);</span>
+            <span class="s1">String state = req.getParameter(</span><span class="s2">&quot;state&quot;</span><span class="s1">);</span>
+            <span class="s1">String religion = req.getParameter(</span><span class="s2">&quot;religion&quot;</span><span class="s1">);</span>
+            <span class="s1">String category = req.getParameter(</span><span class="s2">&quot;category&quot;</span><span class="s1">);</span>
+            <span class="s1">String education = req.getParameter(</span><span class="s2">&quot;education&quot;</span><span class="s1">);</span>
+
+            <span class="s3">// ✅ Generate unique card number and PIN</span>
+            <span class="s1">Random rand = </span><span class="s0">new </span><span class="s1">Random();</span>
+            <span class="s0">long </span><span class="s1">cardNumber = </span><span class="s4">1000000000000000L </span><span class="s1">+ (</span><span class="s0">long</span><span class="s1">) (rand.nextDouble() * </span><span class="s4">9000000000000000L</span><span class="s1">);</span>
+            <span class="s0">int </span><span class="s1">pin = </span><span class="s4">1000 </span><span class="s1">+ rand.nextInt(</span><span class="s4">9000</span><span class="s1">);</span>
+
+            <span class="s3">// ✅ Step 1: Insert into signup</span>
+            <span class="s1">String query1 = </span><span class="s2">&quot;INSERT INTO signup (form_no, name, father_name, DOB, gender, email, marital_status, address, city, pincode, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span><span class="s1">;</span>
+            <span class="s0">try </span><span class="s1">(PreparedStatement ps = con.prepareStatement(query1)) {</span>
+                <span class="s1">ps.setString(</span><span class="s4">1</span><span class="s1">, formNo);</span>
+                <span class="s1">ps.setString(</span><span class="s4">2</span><span class="s1">, name);</span>
+                <span class="s1">ps.setString(</span><span class="s4">3</span><span class="s1">, father);</span>
+                <span class="s1">ps.setString(</span><span class="s4">4</span><span class="s1">, dob);</span>
+                <span class="s1">ps.setString(</span><span class="s4">5</span><span class="s1">, gender);</span>
+                <span class="s1">ps.setString(</span><span class="s4">6</span><span class="s1">, email);</span>
+                <span class="s1">ps.setString(</span><span class="s4">7</span><span class="s1">, </span><span class="s2">&quot;Single&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">8</span><span class="s1">, address);</span>
+                <span class="s1">ps.setString(</span><span class="s4">9</span><span class="s1">, city);</span>
+                <span class="s1">ps.setString(</span><span class="s4">10</span><span class="s1">, pincode);</span>
+                <span class="s1">ps.setString(</span><span class="s4">11</span><span class="s1">, state);</span>
+                <span class="s1">ps.executeUpdate();</span>
+            <span class="s1">}</span>
+
+            <span class="s3">// ✅ Step 2: Insert into signuptwo</span>
+            <span class="s1">String query2 = </span><span class="s2">&quot;INSERT INTO signuptwo (form_no, religion, category, income, education, occupation, pan, aadhar, seniorcitizen, existing_account) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span><span class="s1">;</span>
+            <span class="s0">try </span><span class="s1">(PreparedStatement ps = con.prepareStatement(query2)) {</span>
+                <span class="s1">ps.setString(</span><span class="s4">1</span><span class="s1">, formNo);</span>
+                <span class="s1">ps.setString(</span><span class="s4">2</span><span class="s1">, religion);</span>
+                <span class="s1">ps.setString(</span><span class="s4">3</span><span class="s1">, category);</span>
+                <span class="s1">ps.setString(</span><span class="s4">4</span><span class="s1">, </span><span class="s2">&quot;0&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">5</span><span class="s1">, education);</span>
+                <span class="s1">ps.setString(</span><span class="s4">6</span><span class="s1">, </span><span class="s2">&quot;Student&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">7</span><span class="s1">, </span><span class="s2">&quot;NA&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">8</span><span class="s1">, </span><span class="s2">&quot;NA&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">9</span><span class="s1">, </span><span class="s2">&quot;No&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">10</span><span class="s1">, </span><span class="s2">&quot;No&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.executeUpdate();</span>
+            <span class="s1">}</span>
+
+            <span class="s3">// ✅ Step 3: Insert into signupthree</span>
+            <span class="s1">String query3 = </span><span class="s2">&quot;INSERT INTO signupthree (form_no, account_type, card_number, pin, facility, balance) VALUES (?, ?, ?, ?, ?, 0)&quot;</span><span class="s1">;</span>
+            <span class="s0">try </span><span class="s1">(PreparedStatement ps = con.prepareStatement(query3)) {</span>
+                <span class="s1">ps.setString(</span><span class="s4">1</span><span class="s1">, formNo);</span>
+                <span class="s1">ps.setString(</span><span class="s4">2</span><span class="s1">, </span><span class="s2">&quot;Savings&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.setString(</span><span class="s4">3</span><span class="s1">, String.valueOf(cardNumber));</span>
+                <span class="s1">ps.setString(</span><span class="s4">4</span><span class="s1">, String.valueOf(pin));</span>
+                <span class="s1">ps.setString(</span><span class="s4">5</span><span class="s1">, </span><span class="s2">&quot;ATM, Internet Banking&quot;</span><span class="s1">);</span>
+                <span class="s1">ps.executeUpdate();</span>
+            <span class="s1">}</span>
+
+            <span class="s3">// ✅ Success message</span>
+            <span class="s1">res.getWriter().println(</span><span class="s2">&quot;&lt;html&gt;&lt;body style='font-family:Poppins;text-align:center;'&gt;&quot;</span>
+                    <span class="s1">+ </span><span class="s2">&quot;&lt;h2 style='color:green;'&gt;Account Created Successfully ✅&lt;/h2&gt;&quot;</span>
+                    <span class="s1">+ </span><span class="s2">&quot;&lt;p&gt;&lt;b&gt;Card Number:&lt;/b&gt; &quot; </span><span class="s1">+ cardNumber + </span><span class="s2">&quot;&lt;/p&gt;&quot;</span>
+                    <span class="s1">+ </span><span class="s2">&quot;&lt;p&gt;&lt;b&gt;PIN:&lt;/b&gt; &quot; </span><span class="s1">+ pin + </span><span class="s2">&quot;&lt;/p&gt;&quot;</span>
+                    <span class="s1">+ </span><span class="s2">&quot;&lt;a href='index.jsp'&gt;Go to Login&lt;/a&gt;&quot;</span>
+                    <span class="s1">+ </span><span class="s2">&quot;&lt;/body&gt;&lt;/html&gt;&quot;</span><span class="s1">);</span>
+
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s1">res.getWriter().println(</span><span class="s2">&quot;&lt;p style='color:red;text-align:center;'&gt;Error: &quot; </span><span class="s1">+ e.getMessage() + </span><span class="s2">&quot;&lt;/p&gt;&quot;</span><span class="s1">);</span>
+            <span class="s1">e.printStackTrace();</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>SignupTwoServlet.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ff79c6;}
+.s1 { color: #e1e1e6;}
+.s2 { color: #f1fa8c;}
+.s3 { color: #bd93f9;}
+</style>
+</head>
+<body bgcolor="#15121e">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+SignupTwoServlet.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.bankmanagement.web;</span>
+
+<span class="s0">import </span><span class="s1">jakarta.servlet.*;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.http.*;</span>
+<span class="s0">import </span><span class="s1">java.io.*;</span>
+<span class="s0">import </span><span class="s1">java.sql.*;</span>
+
+<span class="s0">public class </span><span class="s1">SignupTwoServlet </span><span class="s0">extends </span><span class="s1">HttpServlet {</span>
+    <span class="s0">protected void </span><span class="s1">doPost(HttpServletRequest request, HttpServletResponse response) </span><span class="s0">throws </span><span class="s1">IOException {</span>
+        <span class="s1">String religion = request.getParameter(</span><span class="s2">&quot;religion&quot;</span><span class="s1">);</span>
+        <span class="s1">String category = request.getParameter(</span><span class="s2">&quot;category&quot;</span><span class="s1">);</span>
+        <span class="s1">String income = request.getParameter(</span><span class="s2">&quot;income&quot;</span><span class="s1">);</span>
+        <span class="s1">String education = request.getParameter(</span><span class="s2">&quot;education&quot;</span><span class="s1">);</span>
+        <span class="s1">String occupation = request.getParameter(</span><span class="s2">&quot;occupation&quot;</span><span class="s1">);</span>
+
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">Class.forName(</span><span class="s2">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="s1">);</span>
+            <span class="s1">Connection con = DriverManager.getConnection(</span><span class="s2">&quot;jdbc:mysql://localhost:3306/banksystem&quot;</span><span class="s1">, </span><span class="s2">&quot;root&quot;</span><span class="s1">, </span><span class="s2">&quot;131486&quot;</span><span class="s1">);</span>
+            <span class="s1">PreparedStatement ps = con.prepareStatement(</span><span class="s2">&quot;INSERT INTO signuptwo (religion, category, income, education, occupation) VALUES (?,?,?,?,?)&quot;</span><span class="s1">);</span>
+            <span class="s1">ps.setString(</span><span class="s3">1</span><span class="s1">, religion);</span>
+            <span class="s1">ps.setString(</span><span class="s3">2</span><span class="s1">, category);</span>
+            <span class="s1">ps.setString(</span><span class="s3">3</span><span class="s1">, income);</span>
+            <span class="s1">ps.setString(</span><span class="s3">4</span><span class="s1">, education);</span>
+            <span class="s1">ps.setString(</span><span class="s3">5</span><span class="s1">, occupation);</span>
+
+            <span class="s1">ps.executeUpdate();</span>
+            <span class="s1">con.close();</span>
+
+            <span class="s1">response.sendRedirect(</span><span class="s2">&quot;signupThree.jsp&quot;</span><span class="s1">);</span>
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s1">response.getWriter().println(</span><span class="s2">&quot;Database Error: &quot; </span><span class="s1">+ e.getMessage());</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

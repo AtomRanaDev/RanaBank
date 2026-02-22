@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>LoginServlet.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ff79c6;}
+.s1 { color: #e1e1e6;}
+.s2 { color: #f1fa8c;}
+.s3 { color: #6272a4;}
+.s4 { color: #bd93f9;}
+</style>
+</head>
+<body bgcolor="#15121e">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+LoginServlet.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.bankmanagement.web;</span>
+
+<span class="s0">import </span><span class="s1">jakarta.servlet.ServletException;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.annotation.WebServlet;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.http.*;</span>
+<span class="s0">import </span><span class="s1">java.io.IOException;</span>
+<span class="s0">import </span><span class="s1">java.sql.*;</span>
+
+<span class="s1">@WebServlet(</span><span class="s2">&quot;/login&quot;</span><span class="s1">)</span>
+<span class="s0">public class </span><span class="s1">LoginServlet </span><span class="s0">extends </span><span class="s1">HttpServlet {</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">doPost(HttpServletRequest req, HttpServletResponse res)</span>
+            <span class="s0">throws </span><span class="s1">ServletException, IOException {</span>
+
+        <span class="s1">String acc = req.getParameter(</span><span class="s2">&quot;account&quot;</span><span class="s1">);</span>
+        <span class="s1">String pin = req.getParameter(</span><span class="s2">&quot;pin&quot;</span><span class="s1">);</span>
+
+        <span class="s3">// ✅ reCAPTCHA verification (optional, skip if not set up)</span>
+        <span class="s1">String gRecaptchaResponse = req.getParameter(</span><span class="s2">&quot;g-recaptcha-response&quot;</span><span class="s1">);</span>
+        <span class="s0">boolean </span><span class="s1">verified = </span><span class="s0">true</span><span class="s1">;</span>
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">verified = VerifyRecaptcha.verify(gRecaptchaResponse);</span>
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s3">// If reCAPTCHA fails silently, allow local login</span>
+            <span class="s1">verified = </span><span class="s0">true</span><span class="s1">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">if </span><span class="s1">(!verified) {</span>
+            <span class="s1">req.setAttribute(</span><span class="s2">&quot;error&quot;</span><span class="s1">, </span><span class="s2">&quot;Please verify you're not a robot!&quot;</span><span class="s1">);</span>
+            <span class="s1">req.getRequestDispatcher(</span><span class="s2">&quot;index.jsp&quot;</span><span class="s1">).forward(req, res);</span>
+            <span class="s0">return</span><span class="s1">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">try </span><span class="s1">(Connection con = BankDAO.getConnection()) {</span>
+            <span class="s1">PreparedStatement ps = con.prepareStatement(</span>
+                    <span class="s2">&quot;SELECT * FROM signupthree WHERE card_number=? AND pin=?&quot;</span><span class="s1">);</span>
+
+            <span class="s1">ps.setString(</span><span class="s4">1</span><span class="s1">, acc);</span>
+            <span class="s1">ps.setString(</span><span class="s4">2</span><span class="s1">, pin);</span>
+            <span class="s1">ResultSet rs = ps.executeQuery();</span>
+
+            <span class="s0">if </span><span class="s1">(rs.next()) {</span>
+                <span class="s1">HttpSession session = req.getSession();</span>
+                <span class="s1">session.setAttribute(</span><span class="s2">&quot;account&quot;</span><span class="s1">, acc);</span>
+                <span class="s1">res.sendRedirect(</span><span class="s2">&quot;DashboardServlet?pin=&quot; </span><span class="s1">+ pin);</span>
+            <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                <span class="s1">req.setAttribute(</span><span class="s2">&quot;error&quot;</span><span class="s1">, </span><span class="s2">&quot;Invalid Account or PIN!&quot;</span><span class="s1">);</span>
+                <span class="s1">req.getRequestDispatcher(</span><span class="s2">&quot;index.jsp&quot;</span><span class="s1">).forward(req, res);</span>
+            <span class="s1">}</span>
+
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s1">e.printStackTrace();</span>
+            <span class="s1">res.getWriter().println(</span><span class="s2">&quot;Database Error: &quot; </span><span class="s1">+ e.getMessage());</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

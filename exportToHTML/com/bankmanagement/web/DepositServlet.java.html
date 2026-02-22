@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>DepositServlet.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ff79c6;}
+.s1 { color: #e1e1e6;}
+.s2 { color: #f1fa8c;}
+.s3 { color: #6272a4;}
+.s4 { color: #bd93f9;}
+</style>
+</head>
+<body bgcolor="#15121e">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+DepositServlet.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.bankmanagement.web;</span>
+
+<span class="s0">import </span><span class="s1">jakarta.servlet.*;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.annotation.WebServlet;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.http.*;</span>
+<span class="s0">import </span><span class="s1">java.io.*;</span>
+<span class="s0">import </span><span class="s1">java.sql.*;</span>
+<span class="s0">import </span><span class="s1">java.time.LocalDateTime;</span>
+<span class="s0">import </span><span class="s1">java.time.format.DateTimeFormatter;</span>
+
+<span class="s1">@WebServlet(</span><span class="s2">&quot;/DepositServlet&quot;</span><span class="s1">) </span><span class="s3">// ✅ This line is the key fix</span>
+<span class="s0">public class </span><span class="s1">DepositServlet </span><span class="s0">extends </span><span class="s1">HttpServlet {</span>
+    <span class="s0">protected void </span><span class="s1">doPost(HttpServletRequest request, HttpServletResponse response) </span><span class="s0">throws </span><span class="s1">IOException {</span>
+        <span class="s1">String pin = request.getParameter(</span><span class="s2">&quot;pin&quot;</span><span class="s1">);</span>
+        <span class="s0">double </span><span class="s1">amount = Double.parseDouble(request.getParameter(</span><span class="s2">&quot;amount&quot;</span><span class="s1">));</span>
+
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">Class.forName(</span><span class="s2">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="s1">);</span>
+            <span class="s1">Connection con = DriverManager.getConnection(</span><span class="s2">&quot;jdbc:mysql://localhost:3306/banksystem&quot;</span><span class="s1">, </span><span class="s2">&quot;root&quot;</span><span class="s1">, </span><span class="s2">&quot;131486&quot;</span><span class="s1">);</span>
+
+            <span class="s1">PreparedStatement ps = con.prepareStatement(</span><span class="s2">&quot;UPDATE signupthree SET balance = balance + ? WHERE pin = ?&quot;</span><span class="s1">);</span>
+            <span class="s1">ps.setDouble(</span><span class="s4">1</span><span class="s1">, amount);</span>
+            <span class="s1">ps.setString(</span><span class="s4">2</span><span class="s1">, pin);</span>
+            <span class="s1">ps.executeUpdate();</span>
+
+            <span class="s1">PreparedStatement ps2 = con.prepareStatement(</span><span class="s2">&quot;INSERT INTO bank(pin, date, type, amount) VALUES(?,?,?,?)&quot;</span><span class="s1">);</span>
+            <span class="s1">String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern(</span><span class="s2">&quot;yyyy-MM-dd HH:mm:ss&quot;</span><span class="s1">));</span>
+            <span class="s1">ps2.setString(</span><span class="s4">1</span><span class="s1">, pin);</span>
+            <span class="s1">ps2.setString(</span><span class="s4">2</span><span class="s1">, date);</span>
+            <span class="s1">ps2.setString(</span><span class="s4">3</span><span class="s1">, </span><span class="s2">&quot;Deposit&quot;</span><span class="s1">);</span>
+            <span class="s1">ps2.setString(</span><span class="s4">4</span><span class="s1">, String.valueOf(amount));</span>
+            <span class="s1">ps2.executeUpdate();</span>
+
+            <span class="s1">response.sendRedirect(</span><span class="s2">&quot;DashboardServlet?pin=&quot; </span><span class="s1">+ pin);</span>
+            <span class="s1">con.close();</span>
+
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s1">response.getWriter().println(</span><span class="s2">&quot;Error: &quot; </span><span class="s1">+ e.getMessage());</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

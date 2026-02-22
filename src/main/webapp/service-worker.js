@@ -1,0 +1,18 @@
+self.addEventListener("install", e => {
+  e.waitUntil(
+    caches.open("ranabank-cache").then(cache => {
+      return cache.addAll([
+        "/BankManagementWeb/",
+        "/BankManagementWeb/index.jsp"
+      ]);
+    })
+  );
+});
+
+self.addEventListener("fetch", e => {
+  e.respondWith(
+    caches.match(e.request).then(response => {
+      return response || fetch(e.request);
+    })
+  );
+});

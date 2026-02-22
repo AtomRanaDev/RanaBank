@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>DepositApiServlet.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ff79c6;}
+.s1 { color: #e1e1e6;}
+.s2 { color: #f1fa8c;}
+.s3 { color: #50fa7b;}
+.s4 { color: #bd93f9;}
+.s5 { color: #6272a4;}
+</style>
+</head>
+<body bgcolor="#15121e">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+DepositApiServlet.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.bankmanagement.web;</span>
+
+<span class="s0">import </span><span class="s1">jakarta.servlet.annotation.WebServlet;</span>
+<span class="s0">import </span><span class="s1">jakarta.servlet.http.*;</span>
+<span class="s0">import </span><span class="s1">java.io.*;</span>
+<span class="s0">import </span><span class="s1">java.sql.*;</span>
+
+<span class="s1">@WebServlet(</span><span class="s2">&quot;/api/deposit&quot;</span><span class="s1">)</span>
+<span class="s0">public class </span><span class="s1">DepositApiServlet </span><span class="s0">extends </span><span class="s1">HttpServlet {</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">protected void </span><span class="s1">doPost(HttpServletRequest req, HttpServletResponse res) </span><span class="s0">throws </span><span class="s1">IOException {</span>
+        <span class="s1">res.setContentType(</span><span class="s2">&quot;application/json&quot;</span><span class="s1">);</span>
+        <span class="s1">PrintWriter out = res.getWriter();</span>
+
+        <span class="s1">String pin = req.getParameter(</span><span class="s2">&quot;pin&quot;</span><span class="s1">);</span>
+        <span class="s1">String amountStr = req.getParameter(</span><span class="s2">&quot;amount&quot;</span><span class="s1">);</span>
+        <span class="s0">double </span><span class="s1">amount;</span>
+
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s1">amount = Double.parseDouble(amountStr);</span>
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(NumberFormatException e) {</span>
+            <span class="s1">out.print(</span><span class="s2">&quot;{</span><span class="s3">\&quot;</span><span class="s2">ok</span><span class="s3">\&quot;</span><span class="s2">:false, </span><span class="s3">\&quot;</span><span class="s2">error</span><span class="s3">\&quot;</span><span class="s2">:</span><span class="s3">\&quot;</span><span class="s2">Invalid amount format</span><span class="s3">\&quot;</span><span class="s2">}&quot;</span><span class="s1">);</span>
+            <span class="s0">return</span><span class="s1">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">if </span><span class="s1">(amount &lt;= </span><span class="s4">0</span><span class="s1">) {</span>
+            <span class="s1">out.print(</span><span class="s2">&quot;{</span><span class="s3">\&quot;</span><span class="s2">ok</span><span class="s3">\&quot;</span><span class="s2">:false, </span><span class="s3">\&quot;</span><span class="s2">error</span><span class="s3">\&quot;</span><span class="s2">:</span><span class="s3">\&quot;</span><span class="s2">Deposit amount must be greater than 0</span><span class="s3">\&quot;</span><span class="s2">}&quot;</span><span class="s1">);</span>
+            <span class="s0">return</span><span class="s1">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">try </span><span class="s1">{</span>
+            <span class="s5">// Load MySQL driver</span>
+            <span class="s1">Class.forName(</span><span class="s2">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="s1">);</span>
+
+            <span class="s5">// Connect to database</span>
+            <span class="s0">try </span><span class="s1">(Connection con = DriverManager.getConnection(</span>
+                    <span class="s2">&quot;jdbc:mysql://localhost:3306/banksystem&quot;</span><span class="s1">, </span><span class="s2">&quot;root&quot;</span><span class="s1">, </span><span class="s2">&quot;131486&quot;</span><span class="s1">)) {</span>
+
+                <span class="s5">// 1️⃣ Update user balance</span>
+                <span class="s0">try </span><span class="s1">(PreparedStatement ps = con.prepareStatement(</span>
+                        <span class="s2">&quot;UPDATE signupthree SET balance = balance + ? WHERE pin = ?&quot;</span><span class="s1">)) {</span>
+                    <span class="s1">ps.setDouble(</span><span class="s4">1</span><span class="s1">, amount);</span>
+                    <span class="s1">ps.setString(</span><span class="s4">2</span><span class="s1">, pin);</span>
+                    <span class="s1">ps.executeUpdate();</span>
+                <span class="s1">}</span>
+
+                <span class="s5">// 2️⃣ Log the deposit transaction in 'bank' table</span>
+                <span class="s0">try </span><span class="s1">(PreparedStatement ps = con.prepareStatement(</span>
+                        <span class="s2">&quot;INSERT INTO bank(pin, date, type, amount) VALUES(?, NOW(), 'Deposit', ?)&quot;</span><span class="s1">)) {</span>
+                    <span class="s1">ps.setString(</span><span class="s4">1</span><span class="s1">, pin);</span>
+                    <span class="s1">ps.setDouble(</span><span class="s4">2</span><span class="s1">, amount);</span>
+                    <span class="s1">ps.executeUpdate();</span>
+                <span class="s1">}</span>
+
+                <span class="s5">// 3️⃣ Fetch updated balance</span>
+                <span class="s0">double </span><span class="s1">newBalance = </span><span class="s4">0.0</span><span class="s1">;</span>
+                <span class="s0">try </span><span class="s1">(PreparedStatement ps = con.prepareStatement(</span>
+                        <span class="s2">&quot;SELECT balance FROM signupthree WHERE pin = ?&quot;</span><span class="s1">)) {</span>
+                    <span class="s1">ps.setString(</span><span class="s4">1</span><span class="s1">, pin);</span>
+                    <span class="s1">ResultSet rs = ps.executeQuery();</span>
+                    <span class="s0">if </span><span class="s1">(rs.next()) {</span>
+                        <span class="s1">newBalance = rs.getDouble(</span><span class="s2">&quot;balance&quot;</span><span class="s1">);</span>
+                    <span class="s1">}</span>
+                <span class="s1">}</span>
+
+                <span class="s5">// ✅ Success response</span>
+                <span class="s1">out.print(</span><span class="s2">&quot;{</span><span class="s3">\&quot;</span><span class="s2">ok</span><span class="s3">\&quot;</span><span class="s2">:true, </span><span class="s3">\&quot;</span><span class="s2">newBalance</span><span class="s3">\&quot;</span><span class="s2">:&quot; </span><span class="s1">+ newBalance + </span><span class="s2">&quot;}&quot;</span><span class="s1">);</span>
+            <span class="s1">}</span>
+
+        <span class="s1">} </span><span class="s0">catch </span><span class="s1">(Exception e) {</span>
+            <span class="s1">e.printStackTrace();</span>
+            <span class="s1">out.print(</span><span class="s2">&quot;{</span><span class="s3">\&quot;</span><span class="s2">ok</span><span class="s3">\&quot;</span><span class="s2">:false, </span><span class="s3">\&quot;</span><span class="s2">error</span><span class="s3">\&quot;</span><span class="s2">:</span><span class="s3">\&quot;</span><span class="s2">&quot; </span><span class="s1">+ e.getMessage().replace(</span><span class="s2">&quot;</span><span class="s3">\&quot;</span><span class="s2">&quot;</span><span class="s1">, </span><span class="s2">&quot;</span><span class="s3">\\\&quot;</span><span class="s2">&quot;</span><span class="s1">) + </span><span class="s2">&quot;</span><span class="s3">\&quot;</span><span class="s2">}&quot;</span><span class="s1">);</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

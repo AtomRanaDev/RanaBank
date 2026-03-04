@@ -7,7 +7,7 @@ public class BankDAO {
 
     // Railway MySQL connection
     private static final String URL =
-            "mysql://root:VzsMjIDQpuHAhoSgXjyFbxgWqOyzkgNX@crossover.proxy.rlwy.net:14457/railway";
+            "jdbc:mysql://crossover.proxy.rlwy.net:14457/railway?sslMode=REQUIRED&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
     private static final String USER = "root";
     private static final String PASSWORD = "VzsMjIDQpuHAhoSgXjyFbxgWqOyzkgNX";

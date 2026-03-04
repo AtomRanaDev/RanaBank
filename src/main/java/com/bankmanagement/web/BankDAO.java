@@ -4,31 +4,32 @@ import java.sql.*;
 
 public class BankDAO {
 
-
-    /* Railway MySQL connection */
+    // Railway MySQL connection
     private static final String URL =
-            "jdbc:mysql://crossover.proxy.rlwy.net:14457/railway?sslMode=REQUIRED&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=30000&autoReconnect=true";
+            "jdbc:mysql://crossover.proxy.rlwy.net:14457/railway"
+                    + "?sslMode=REQUIRED"
+                    + "&allowPublicKeyRetrieval=true"
+                    + "&serverTimezone=UTC"
+                    + "&connectTimeout=30000"
+                    + "&socketTimeout=30000"
+                    + "&autoReconnect=true";
 
     private static final String USER = "root";
     private static final String PASSWORD = "VzsMjIDQpuHAhoSgXjyFbxgWqOyzkgNX";
 
-    /* Get database connection */
     public static Connection getConnection() throws SQLException {
 
         try {
-
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             return DriverManager.getConnection(URL, USER, PASSWORD);
 
         } catch (ClassNotFoundException e) {
-
             throw new SQLException("MySQL Driver not found", e);
-
         }
     }
 
-    /* Get account balance */
+    // Get balance
     public static double getBalanceByCard(String cardNumber) {
 
         double balance = 0;
@@ -54,9 +55,8 @@ public class BankDAO {
         return balance;
     }
 
-    /* Update account balance */
-    public static boolean updateBalance(String cardNumber,
-                                        double newBalance) {
+    // Update balance
+    public static boolean updateBalance(String cardNumber, double newBalance) {
 
         String query =
                 "UPDATE signupthree SET balance=? WHERE card_number=?";
@@ -76,10 +76,8 @@ public class BankDAO {
         return false;
     }
 
-    /* Record transaction */
-    public static void recordTransaction(String cardNumber,
-                                         String type,
-                                         double amount) {
+    // Record transaction
+    public static void recordTransaction(String cardNumber, String type, double amount) {
 
         String query =
                 "INSERT INTO bank(card_number,type,amount) VALUES(?,?,?)";
@@ -98,12 +96,12 @@ public class BankDAO {
         }
     }
 
-    /* Get last transaction */
+    // Last transaction
     public static String getLastTransaction(String cardNumber) {
 
         String query =
-                "SELECT type, amount, transaction_time FROM bank " +
-                        "WHERE card_number=? ORDER BY transaction_time DESC LIMIT 1";
+                "SELECT type, amount, transaction_time FROM bank "
+                        + "WHERE card_number=? ORDER BY transaction_time DESC LIMIT 1";
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(query)) {
@@ -125,6 +123,4 @@ public class BankDAO {
 
         return "No transactions found.";
     }
-
-
 }

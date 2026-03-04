@@ -1,24 +1,37 @@
 package com.bankmanagement.web;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 public class BankDAO {
 
 
-    /* Railway automatically injects these environment variables */
+    /* Railway Environment Variables */
 
-    private static final String URL = System.getenv("MYSQL_URL");
+    private static final String HOST = System.getenv("MYSQLHOST");
+    private static final String PORT = System.getenv("MYSQLPORT");
+    private static final String DATABASE = System.getenv("MYSQLDATABASE");
     private static final String USER = System.getenv("MYSQLUSER");
     private static final String PASSWORD = System.getenv("MYSQLPASSWORD");
 
-    public static Connection getConnection() throws Exception {
+    /* Create DB Connection */
 
-        Class.forName("com.mysql.cj.jdbc.Driver");
+    public static Connection getConnection() throws SQLException {
 
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        try {
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            String url =
+                    "jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE +
+                            "?sslMode=REQUIRED&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+
+            return DriverManager.getConnection(url, USER, PASSWORD);
+
+        } catch (ClassNotFoundException e) {
+
+            throw new SQLException("MySQL Driver not found", e);
+
+        }
     }
 
     /* Get Balance */
@@ -27,12 +40,12 @@ public class BankDAO {
 
         double balance = 0;
 
-        try (Connection con = getConnection()) {
+        String query =
+                "SELECT balance FROM signupthree WHERE card_number=?";
 
-            String query =
-                    "SELECT balance FROM signupthree WHERE card_number=?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
 
-            PreparedStatement ps = con.prepareStatement(query);
             ps.setString(1, cardNumber);
 
             ResultSet rs = ps.executeQuery();
@@ -50,21 +63,21 @@ public class BankDAO {
 
     /* Update Balance */
 
-    public static boolean updateBalance(String cardNumber,double newBalance){
+    public static boolean updateBalance(String cardNumber,
+                                        double newBalance) {
 
-        try (Connection con = getConnection()) {
+        String query =
+                "UPDATE signupthree SET balance=? WHERE card_number=?";
 
-            String query =
-                    "UPDATE signupthree SET balance=? WHERE card_number=?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
 
-            PreparedStatement ps = con.prepareStatement(query);
-
-            ps.setDouble(1,newBalance);
-            ps.setString(2,cardNumber);
+            ps.setDouble(1, newBalance);
+            ps.setString(2, cardNumber);
 
             return ps.executeUpdate() > 0;
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -75,50 +88,48 @@ public class BankDAO {
 
     public static void recordTransaction(String cardNumber,
                                          String type,
-                                         double amount){
+                                         double amount) {
 
-        try (Connection con = getConnection()) {
+        String query =
+                "INSERT INTO bank(card_number,type,amount) VALUES(?,?,?)";
 
-            String query =
-                    "INSERT INTO bank(card_number,type,amount) VALUES(?,?,?)";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
 
-            PreparedStatement ps = con.prepareStatement(query);
-
-            ps.setString(1,cardNumber);
-            ps.setString(2,type);
-            ps.setDouble(3,amount);
+            ps.setString(1, cardNumber);
+            ps.setString(2, type);
+            ps.setDouble(3, amount);
 
             ps.executeUpdate();
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /* Last Transaction */
+    /* Get Last Transaction */
 
-    public static String getLastTransaction(String cardNumber){
+    public static String getLastTransaction(String cardNumber) {
 
-        try (Connection con = getConnection()) {
+        String query =
+                "SELECT type,amount,transaction_time FROM bank " +
+                        "WHERE card_number=? ORDER BY transaction_time DESC LIMIT 1";
 
-            String query =
-                    "SELECT type,amount,transaction_time FROM bank " +
-                            "WHERE card_number=? ORDER BY transaction_time DESC LIMIT 1";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
 
-            PreparedStatement ps = con.prepareStatement(query);
-
-            ps.setString(1,cardNumber);
+            ps.setString(1, cardNumber);
 
             ResultSet rs = ps.executeQuery();
 
-            if(rs.next()){
+            if (rs.next()) {
 
                 return rs.getString("type").toUpperCase()
-                        +" ₹"+rs.getDouble("amount")
-                        +" on "+rs.getTimestamp("transaction_time");
+                        + " ₹" + rs.getDouble("amount")
+                        + " on " + rs.getTimestamp("transaction_time");
             }
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

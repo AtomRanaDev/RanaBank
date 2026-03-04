@@ -129,10 +129,13 @@ chatBody.scrollTop=chatBody.scrollHeight;
 
 try{
 
-const res=await fetch("ChatServlet",{
-method:"POST",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:new URLSearchParams({message:text})
+const res = await fetch("ChatServlet", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({ message: text })
 });
 
 const data=await res.json();

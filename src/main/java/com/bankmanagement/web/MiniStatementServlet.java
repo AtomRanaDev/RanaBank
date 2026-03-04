@@ -3,45 +3,52 @@ package com.bankmanagement.web;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import java.io.*;
+import java.io.IOException;
 import java.sql.*;
-import java.util.*;
-@WebServlet("/MiniStatementServlet")
+import java.util.ArrayList;
+import java.util.List;
 
+@WebServlet("/MiniStatementServlet")
 public class MiniStatementServlet extends HttpServlet {
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pin = request.getParameter("pin");
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("pin") == null) {
+            response.sendRedirect("index.jsp");
+            return;
+        }
+
+        String cardNumber = (String) session.getAttribute("cardNumber");
 
         List<String[]> transactions = new ArrayList<>();
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/banksystem", "root", "131486");
+        try (Connection con = BankDAO.getConnection()) {
 
-            PreparedStatement ps = con.prepareStatement("SELECT date, type, amount FROM bank WHERE pin=? ORDER BY id DESC LIMIT 10");
-            ps.setString(1, pin);
+            String query = "SELECT transaction_time, type, amount FROM bank WHERE card_number = ? ORDER BY transaction_time DESC LIMIT 10";
+
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, cardNumber);
+
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 transactions.add(new String[]{
-                        rs.getString("date"),
+                        rs.getTimestamp("transaction_time").toString(),
                         rs.getString("type"),
                         rs.getString("amount")
                 });
             }
 
-            con.close();
-
-            request.setAttribute("transactions", transactions);
-            request.setAttribute("pin", pin);
-            RequestDispatcher rd = request.getRequestDispatcher("ministatement.jsp");
-            rd.forward(request, response);
-
         } catch (Exception e) {
-            response.setContentType("text/html");
-            PrintWriter out = response.getWriter();
-            out.println("<h3 style='color:red;text-align:center;'>Error fetching statement: " + e.getMessage() + "</h3>");
+            e.printStackTrace();
         }
+
+        request.setAttribute("transactions", transactions);
+        RequestDispatcher rd = request.getRequestDispatcher("ministatement.jsp");
+        rd.forward(request, response);
     }
 }

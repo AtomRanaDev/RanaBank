@@ -2,88 +2,44 @@ package com.bankmanagement.web;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import java.io.*;
-import java.sql.*;
+import java.io.IOException;
 
-@WebServlet("/api/withdraw")
+@WebServlet("/WithdrawApiServlet")
 public class WithdrawApiServlet extends HttpServlet {
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setContentType("application/json");
-        PrintWriter out = res.getWriter();
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+            throws IOException {
 
-        String pin = req.getParameter("pin");
-        String amountStr = req.getParameter("amount");
-        double amount;
+        response.setContentType("application/json");
 
-        try {
-            amount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            out.print("{\"ok\":false, \"error\":\"Invalid amount format\"}");
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("cardNumber") == null) {
+            response.getWriter().write("{\"ok\":false}");
             return;
         }
 
-        if (amount <= 0) {
-            out.print("{\"ok\":false, \"error\":\"Withdrawal amount must be greater than 0\"}");
+        String cardNumber = (String) session.getAttribute("cardNumber");
+        double amount = Double.parseDouble(request.getParameter("amount"));
+
+        double currentBalance = BankDAO.getBalanceByCard(cardNumber);
+
+        if (amount > currentBalance) {
+            response.getWriter().write(
+                    "{\"ok\":false,\"error\":\"Insufficient Balance\"}"
+            );
             return;
         }
 
-        try {
-            // Load MySQL driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
+        double newBalance = currentBalance - amount;
 
-            // Connect to database
-            try (Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/banksystem", "root", "131486")) {
+        BankDAO.updateBalance(cardNumber, newBalance);
+        BankDAO.recordTransaction(cardNumber, "Withdraw", amount);
 
-                double currentBalance = 0.0;
+        session.setAttribute("balance", newBalance);
 
-                // 1️⃣ Get current balance
-                try (PreparedStatement ps = con.prepareStatement(
-                        "SELECT balance FROM signupthree WHERE pin = ?")) {
-                    ps.setString(1, pin);
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        currentBalance = rs.getDouble("balance");
-                    } else {
-                        out.print("{\"ok\":false, \"error\":\"Account not found\"}");
-                        return;
-                    }
-                }
-
-                // 2️⃣ Check sufficient balance
-                if (amount > currentBalance) {
-                    out.print("{\"ok\":false, \"error\":\"Insufficient balance\"}");
-                    return;
-                }
-
-                // 3️⃣ Update balance
-                try (PreparedStatement ps = con.prepareStatement(
-                        "UPDATE signupthree SET balance = balance - ? WHERE pin = ?")) {
-                    ps.setDouble(1, amount);
-                    ps.setString(2, pin);
-                    ps.executeUpdate();
-                }
-
-                // 4️⃣ Log the transaction
-                try (PreparedStatement ps = con.prepareStatement(
-                        "INSERT INTO bank(pin, date, type, amount) VALUES(?, NOW(), 'Withdraw', ?)")) {
-                    ps.setString(1, pin);
-                    ps.setDouble(2, amount);
-                    ps.executeUpdate();
-                }
-
-                // 5️⃣ Get new balance
-                double newBalance = currentBalance - amount;
-
-                // ✅ Success response
-                out.print("{\"ok\":true, \"newBalance\":" + newBalance + "}");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            out.print("{\"ok\":false, \"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
-        }
+        response.getWriter().write(
+                "{\"ok\":true,\"newBalance\":" + newBalance + "}"
+        );
     }
 }

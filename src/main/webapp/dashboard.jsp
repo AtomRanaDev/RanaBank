@@ -200,10 +200,10 @@
             Swal.fire("Invalid amount", "Please enter a valid deposit value", "error");
             return;
         }
-        const res = await fetch("api/deposit", {
+        const res = await fetch("DepositApiServlet", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ pin, amount })
+         body: new URLSearchParams({ amount })
         });
         const data = await res.json();
         if (data.ok) {
@@ -222,10 +222,10 @@
             Swal.fire("Invalid amount", "Please enter a valid withdrawal value", "error");
             return;
         }
-        const res = await fetch("api/withdraw", {
+        const res = await fetch("WithdrawApiServlet", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ pin, amount })
+           body: new URLSearchParams({ amount })
         });
         const data = await res.json();
         if (data.ok) {

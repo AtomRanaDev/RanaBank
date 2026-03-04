@@ -24,6 +24,7 @@ public class ChatServlet extends HttpServlet {
         }
 
         HttpSession session = req.getSession(false);
+
         if (session == null || session.getAttribute("cardNumber") == null) {
             res.getWriter().write("{\"reply\":\"Please login to use banking features.\"}");
             return;
@@ -32,23 +33,25 @@ public class ChatServlet extends HttpServlet {
         String cardNumber = (String) session.getAttribute("cardNumber");
         String lowerMsg = userMsg.toLowerCase();
 
-        // ✅ BALANCE
+        /* ---------------- BALANCE ---------------- */
+
         if (lowerMsg.contains("balance")) {
 
             double balance = BankDAO.getBalanceByCard(cardNumber);
 
-            res.getWriter().write("{\"reply\":\"Your current balance is ₹"
+            res.getWriter().write("{\"reply\":\"💰 Your current balance is ₹"
                     + balance + "\"}");
             return;
         }
 
-        // ✅ DEPOSIT
-        if (lowerMsg.startsWith("deposit")) {
+        /* ---------------- DEPOSIT ---------------- */
+
+        if (lowerMsg.contains("deposit") || lowerMsg.contains("add")) {
 
             double amount = extractAmount(lowerMsg);
 
             if (amount <= 0) {
-                res.getWriter().write("{\"reply\":\"Use format: deposit 1000\"}");
+                res.getWriter().write("{\"reply\":\"Tell me the amount like: deposit 500\"}");
                 return;
             }
 
@@ -56,55 +59,61 @@ public class ChatServlet extends HttpServlet {
             double newBalance = currentBalance + amount;
 
             BankDAO.updateBalance(cardNumber, newBalance);
-            BankDAO.recordTransaction(cardNumber, "deposit", amount);
+            BankDAO.recordTransaction(cardNumber, "Deposit", amount);
 
-            res.getWriter().write("{\"reply\":\"₹" + amount +
-                    " deposited successfully. New balance is ₹" + newBalance + "\"}");
+            res.getWriter().write("{\"reply\":\"✅ ₹" + amount
+                    + " deposited successfully. New balance ₹" + newBalance + "\"}");
             return;
         }
 
-        // ✅ WITHDRAW
-        if (lowerMsg.startsWith("withdraw")) {
+        /* ---------------- WITHDRAW ---------------- */
+
+        if (lowerMsg.contains("withdraw") ||
+                lowerMsg.contains("take") ||
+                lowerMsg.contains("remove")) {
 
             double amount = extractAmount(lowerMsg);
 
             if (amount <= 0) {
-                res.getWriter().write("{\"reply\":\"Use format: withdraw 500\"}");
+                res.getWriter().write("{\"reply\":\"Tell me the amount like: withdraw 500\"}");
                 return;
             }
 
             double currentBalance = BankDAO.getBalanceByCard(cardNumber);
 
             if (amount > currentBalance) {
-                res.getWriter().write("{\"reply\":\"Insufficient balance.\"}");
+                res.getWriter().write("{\"reply\":\"⚠ Insufficient balance.\"}");
                 return;
             }
 
             double newBalance = currentBalance - amount;
 
             BankDAO.updateBalance(cardNumber, newBalance);
-            BankDAO.recordTransaction(cardNumber, "withdraw", amount);
+            BankDAO.recordTransaction(cardNumber, "Withdraw", amount);
 
-            res.getWriter().write("{\"reply\":\"₹" + amount +
-                    " withdrawn successfully. Remaining balance is ₹" + newBalance + "\"}");
+            res.getWriter().write("{\"reply\":\"🏧 ₹" + amount
+                    + " withdrawn successfully. Remaining balance ₹" + newBalance + "\"}");
             return;
         }
 
-        // ✅ LAST TRANSACTION
+        /* ---------------- LAST TRANSACTION ---------------- */
+
         if (lowerMsg.contains("last transaction")) {
 
             String lastTxn = BankDAO.getLastTransaction(cardNumber);
 
-            res.getWriter().write("{\"reply\":\"Your last transaction was: "
+            res.getWriter().write("{\"reply\":\"📄 Your last transaction: "
                     + escapeJson(lastTxn) + "\"}");
             return;
         }
 
-        // 🔥 AI Fallback
+        /* ---------------- AI FALLBACK ---------------- */
+
         try {
 
-            String systemPrompt = "You are RanaBank's professional banking assistant. "
-                    + "Answer clearly and politely about banking services only.\nUser: ";
+            String systemPrompt =
+                    "You are RanaBank's professional banking assistant. " +
+                            "Answer clearly and politely about banking services only.\nUser: ";
 
             String fullPrompt = systemPrompt + userMsg;
 
@@ -130,6 +139,7 @@ public class ChatServlet extends HttpServlet {
 
             StringBuilder responseBuilder = new StringBuilder();
             String line;
+
             while ((line = br.readLine()) != null) {
                 responseBuilder.append(line);
             }
@@ -141,32 +151,49 @@ public class ChatServlet extends HttpServlet {
             res.getWriter().write("{\"reply\":\"" + escapeJson(reply) + "\"}");
 
         } catch (Exception e) {
-            res.getWriter().write("{\"reply\":\"AI service unavailable.\"}");
+
+            res.getWriter().write("{\"reply\":\"⚠ AI service unavailable.\"}");
         }
     }
 
+    /* ----------- Extract Amount ----------- */
+
     private double extractAmount(String text) {
+
         String numbers = text.replaceAll("[^0-9.]", "");
+
         if (numbers.isEmpty()) return 0;
-        return Double.parseDouble(numbers);
+
+        try {
+            return Double.parseDouble(numbers);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
+    /* ----------- JSON Escape ----------- */
+
     private String escapeJson(String text) {
+
         return text.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
                 .replace("\r", "");
     }
 
+    /* ----------- Ollama Response Parser ----------- */
+
     private String extractOllamaResponse(String json) {
 
         int index = json.indexOf("\"response\":\"");
 
         if (index != -1) {
+
             int start = index + 12;
             int end = json.indexOf("\",", start);
 
             if (end > start) {
+
                 return json.substring(start, end)
                         .replace("\\n", "<br>")
                         .replace("\\\"", "\"");

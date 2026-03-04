@@ -38,7 +38,7 @@ public class ForgotPinServlet extends HttpServlet {
                 session.setAttribute("otp", otp);
                 session.setAttribute("card", card);
 
-                sendOTPEmail(email, otp);
+                System.out.println("OTP for reset: " + otp);
 
                 res.sendRedirect("resetpin.jsp");
 

@@ -82,7 +82,7 @@
       <span class="badge-pill" style="background:#a78bfa;">Fast</span>
       <span class="badge-pill" style="background:#fb7185;">Reliable</span>
     </div>
-    <div class="footer">© 2025 Bank Management Portal — Developed by <b>Anurag Rana</b></div>
+    <div class="footer">© 2026 Bank Management Portal — Developed by <b>Anurag Rana</b></div>
   </div>
 
   <!-- Right login -->
